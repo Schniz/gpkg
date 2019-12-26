@@ -1,4 +1,5 @@
 use crate::package_json::{PackageEngines, PackageRoot};
+use log::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::process::{Command, Stdio};
@@ -63,7 +64,9 @@ impl From<serde_json::Error> for Errors {
 
 pub fn install_package(name: &str, version: Option<String>, config: &Config) -> Result<(), Errors> {
     let node_version = infer_current_node_version();
+    debug!("Current node version: {}", node_version);
     let node_binary_path = get_node_binary_location();
+    debug!("Current node binary path: {}", node_version);
     let package = package_metadata_for_requested_package(name, version, &node_version);
     let package_json_contents = serde_json::to_string_pretty(&package).unwrap();
     let target_path = config.installations_dir().join("qnm");
@@ -103,6 +106,7 @@ mod tests {
 
     #[test]
     fn test() {
+        env_logger::builder().is_test(true).init();
         let config = Config::default();
         install_package("qnm", Some("1.0.1".into()), &config).expect("Can't install qnm");
         let only_child = config
@@ -121,6 +125,7 @@ mod tests {
             .expect("Can't decode output")
             .trim();
         assert_eq!(version, "1.0.1");
+        assert_eq!(true, false);
     }
 }
 
@@ -184,6 +189,3 @@ impl<P1: AsRef<Path>, P2: AsRef<Path>, P3: AsRef<Path>> Binary<P1, P2, P3> {
         Ok(self.symlink_path)
     }
 }
-
-// pub fn install_package(dependency: String, version: String, into: impl AsRef<Path>) {
-// }
