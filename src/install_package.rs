@@ -132,6 +132,8 @@ struct Binary<P1: AsRef<Path>, P2: AsRef<Path>, NodePath: AsRef<Path>> {
     node_binary_path: NodePath,
 }
 
+// Still not sure whether to add `fnm exec {version} {node args}`
+// command in fnm, or to keep this hard Node binary string here
 fn get_node_binary_location() -> std::path::PathBuf {
     let stdout = Command::new("which")
         .arg("node")
