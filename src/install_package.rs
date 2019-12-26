@@ -125,7 +125,6 @@ mod tests {
             .expect("Can't decode output")
             .trim();
         assert_eq!(version, "1.0.1");
-        assert_eq!(true, false);
     }
 }
 
