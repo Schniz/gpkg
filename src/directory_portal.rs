@@ -47,13 +47,12 @@ mod tests {
     #[test]
     fn test_portal() {
         let tempdir = TempDir::new("some_dir").expect("Can't generate a temp directory");
-        let portal = DirectoryPortal::new(&tempdir);
+        let portal = DirectoryPortal::new(tempdir.path().join("subdir"));
         let new_file_path = portal.to_path_buf().join("README.md");
         std::fs::write(&new_file_path, "Hello world!").expect("Can't write file");
-        portal.teleport().expect("Can't close directory portal");
+        let target = portal.teleport().expect("Can't close directory portal");
 
-        let file_exists: Vec<_> = tempdir
-            .path()
+        let file_exists: Vec<_> = target
             .read_dir()
             .expect("Can't read dir")
             .map(|x| x.unwrap().file_name().into_string().unwrap())
