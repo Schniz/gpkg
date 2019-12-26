@@ -1,8 +1,8 @@
 use super::Command;
 use crate::config::Config;
 use crate::install_package;
-use structopt::StructOpt;
 use log::*;
+use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
 pub struct Install {

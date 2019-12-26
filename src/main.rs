@@ -1,14 +1,14 @@
-mod config;
-mod npm;
-mod package_json;
-mod install_package;
-mod directory_portal;
 mod cli;
 mod commands;
+mod config;
+mod directory_portal;
+mod install_package;
+mod npm;
+mod package_json;
 
+use cli::Cli;
 use env_logger;
 use structopt::StructOpt;
-use cli::Cli;
 
 fn main() {
     env_logger::init();
