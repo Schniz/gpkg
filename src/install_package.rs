@@ -176,16 +176,23 @@ impl<P1: AsRef<Path>, P2: AsRef<Path>, P3: AsRef<Path>> Binary<P1, P2, P3> {
     pub fn create_script(self) -> std::io::Result<P1> {
         let src = self.script_src();
         std::fs::write(&self.symlink_path, &src)?;
-
-        if cfg!(unix) {
-            use std::os::unix::fs::PermissionsExt;
-            let metadata = self.symlink_path.as_ref().metadata()?;
-            let mut permissions = metadata.permissions();
-            permissions.set_mode(0o744); // set executable
-            std::fs::set_permissions(&self.symlink_path, permissions)
-                .expect("Can't set permissions for file");
-        };
+        set_permissions(&self.symlink_path)?;
 
         Ok(self.symlink_path)
     }
+}
+
+#[cfg(unix)]
+fn set_permissions(script_path: impl AsRef<Path>) -> std::io::Result<()> {
+    use std::os::unix::fs::PermissionsExt;
+    let metadata = script_path.as_ref().metadata()?;
+    let mut permissions = metadata.permissions();
+    permissions.set_mode(0o744); // set executable
+    std::fs::set_permissions(&script_path, permissions)?;
+    Ok(())
+}
+
+#[cfg(windows)]
+fn set_permissions(_script_path: impl AsRef<Path>) -> std::io::Result<()> {
+    Ok(())
 }
