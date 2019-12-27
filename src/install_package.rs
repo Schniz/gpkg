@@ -147,6 +147,7 @@ fn get_node_binary_location() -> std::path::PathBuf {
     let location = std::str::from_utf8(&stdout)
         .expect("Can't decode result from which command")
         .trim();
+    debug!("`which node` returned location {:?}", &location);
     let node_path = std::fs::canonicalize(location).expect("Can't canonicalize node path");
     node_path
 }
