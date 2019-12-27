@@ -139,13 +139,16 @@ struct Binary<P1: AsRef<Path>, P2: AsRef<Path>, NodePath: AsRef<Path>> {
 // Still not sure whether to add `fnm exec {version} {node args}`
 // command in fnm, or to keep this hard Node binary string here
 fn get_node_binary_location() -> std::path::PathBuf {
-    let stdout = Command::new("which")
+    let stdout = Command::new(if cfg!(windows) { "where" } else { "which" })
         .arg("node")
         .output()
         .expect("Can't read output from 'which' command")
         .stdout;
     let location = std::str::from_utf8(&stdout)
         .expect("Can't decode result from which command")
+        .split('\n')
+        .next()
+        .expect("Got an empty result")
         .trim();
     debug!("`which node` returned location {:?}", &location);
     let node_path = std::fs::canonicalize(location).expect("Can't canonicalize node path");
