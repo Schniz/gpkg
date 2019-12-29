@@ -14,13 +14,13 @@ jobs:
       run: cargo fmt -- --check
 
   build:
-    runs-on: ${{ matrix.machine }}
+    runs-on: ${{ matrix.machine }}-latest
     strategy:
       matrix:
         machine: 
-          - ubuntu-latest
-          - macos-latest
-        # - windows-latest
+          - ubuntu
+          - macos
+        # - windows
     steps:
     - uses: actions/checkout@v1
     - uses: hecrj/setup-rust-action@v1
@@ -35,5 +35,5 @@ jobs:
         RUST_BACKTRACE: 1
     - uses: actions/upload-artifact@v1
       with:
-        name: gpkg.exe
+        name: gpkg-${{ matrix.machine }}
         path: ./target/release/gpkg
