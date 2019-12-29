@@ -165,13 +165,15 @@ impl<P1: AsRef<Path>, P2: AsRef<Path>, P3: AsRef<Path>> Binary<P1, P2, P3> {
     }
 
     pub fn script_src(&self) -> String {
+        let binary_path = self.node_binary_path.as_ref().parent().expect("Got node with no parent");
         let source = format!(
             r#"
                 #!/bin/sh
-                {node_binary_path:?} {binary_path:?} "$@"
+                export PATH={node_binary_path:?}:$PATH
+                {binary_path:?} "$@"
             "#,
             binary_path = self.target_path.as_ref(),
-            node_binary_path = self.node_binary_path.as_ref(),
+            node_binary_path = binary_path,
         );
         unindent::unindent(&source)
     }
