@@ -66,7 +66,7 @@ pub fn install_package(name: &str, version: Option<String>, config: &Config) -> 
     let node_version = infer_current_node_version();
     debug!("Current node version: {}", node_version);
     let node_binary_path = get_node_binary_location();
-    debug!("Current node binary path: {}", node_version);
+    debug!("Current node binary path: {}", node_binary_path.as_path().display());
     let package = package_metadata_for_requested_package(name, version, &node_version);
     let package_json_contents = serde_json::to_string_pretty(&package).unwrap();
     let target_path = config.installations_dir().join("qnm");
