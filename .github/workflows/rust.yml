@@ -27,9 +27,13 @@ jobs:
       with:
         rust-version: stable
     - name: Build
-      run: cargo build --verbose
+      run: cargo build --verbose --release
     - name: Run tests
       run: cargo test --verbose
       env:
         RUST_LOG: debug
         RUST_BACKTRACE: 1
+    - uses: actions/upload-artifact@v1
+      with:
+        name: gpkg.exe
+        path: ./target/release/gpkg
