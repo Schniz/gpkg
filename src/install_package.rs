@@ -72,7 +72,7 @@ pub fn install_package(name: &str, version: Option<String>, config: &Config) -> 
     );
     let package = package_metadata_for_requested_package(name, version, &node_version);
     let package_json_contents = serde_json::to_string_pretty(&package).unwrap();
-    let target_path = config.installations_dir().join("qnm");
+    let target_path = config.installations_dir().join(name);
     if target_path.exists() {
         return Err(Errors::PackageAlreadyInstalled);
     }
