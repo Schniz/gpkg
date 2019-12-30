@@ -1,7 +1,7 @@
-use structopt::StructOpt;
 use super::Command;
-use crate::config::Config;
 use crate::cli::Cli;
+use crate::config::Config;
+use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
 pub struct Completions {

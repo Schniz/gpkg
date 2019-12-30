@@ -1,7 +1,7 @@
 mod command;
-mod install;
 mod completions;
+mod install;
 
 pub use command::Command;
-pub use install::Install;
 pub use completions::Completions;
+pub use install::Install;
