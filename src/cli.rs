@@ -7,12 +7,17 @@ enum Commands {
     /// Install global binaries from npm
     #[structopt(name = "install")]
     Install(commands::Install),
+
+    /// Generate completions for your shell
+    #[structopt(name = "completions")]
+    Completions(commands::Completions),
 }
 
 impl Commands {
     pub fn call(self, config: Config) {
         match self {
             Self::Install(cmd) => cmd.call(config),
+            Self::Completions(cmd) => cmd.call(config),
         }
     }
 }
