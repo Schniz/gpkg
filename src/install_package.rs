@@ -102,7 +102,7 @@ pub fn install_package(
             node_version: node_version.to_string(),
         });
         std::fs::write(
-            config.db_path().join(&binary_name).with_extension("json"),
+            Metadata::path_for(binary_name, config),
             serde_json::to_string(&metadata)?,
         )?;
         let target_binary_path = teleport_path

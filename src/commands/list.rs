@@ -12,22 +12,8 @@ impl Command for List {
     type Error = ();
 
     fn apply(self, config: Config) -> Result<(), Self::Error> {
-        let mut binaries = vec![];
-        let metadata_entries = config
-            .db_path()
-            .read_dir()
-            .expect("Can't access metadata path")
-            .filter_map(Result::ok);
-
-        for entry in metadata_entries {
-            let s = std::fs::read(entry.path()).expect("Can't read file");
-            let metadata: Metadata = serde_json::from_slice(&s).expect("Can't read JSON");
-            let metadata = metadata.latest();
-            binaries.push(metadata);
-        }
-
+        let binaries = Metadata::read_all(&config).expect("Can't read files");
         let max_width = binaries.iter().map(|x| x.binary_name.len()).max();
-        binaries.sort_by(|a, b| a.binary_name.cmp(&b.binary_name));
 
         if let Some(max_width) = max_width {
             for metadata in binaries.iter() {

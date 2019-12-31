@@ -15,6 +15,10 @@ enum Commands {
     /// List all installed binaries
     #[structopt(name = "list")]
     List(commands::List),
+
+    /// Uninstall a package
+    #[structopt(name = "uninstall")]
+    Uninstall(commands::Uninstall),
 }
 
 impl Commands {
@@ -23,6 +27,7 @@ impl Commands {
             Self::Install(cmd) => cmd.call(config),
             Self::Completions(cmd) => cmd.call(config),
             Self::List(cmd) => cmd.call(config),
+            Self::Uninstall(cmd) => cmd.call(config),
         }
     }
 }
