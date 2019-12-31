@@ -1,5 +1,6 @@
 use crate::config::Config;
 use serde::{Deserialize, Serialize};
+use std::convert::TryFrom;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MetadataV1 {
@@ -29,18 +30,40 @@ impl Metadata {
 
     pub fn read_all(config: &Config) -> std::io::Result<Vec<LatestMetadata>> {
         let mut binaries = vec![];
-        let metadata_entries = config.db_path().read_dir()?.filter_map(Result::ok);
+        let metadata_entries = config.bin_dir().read_dir()?.filter_map(Result::ok);
 
         for entry in metadata_entries {
-            let s = std::fs::read(entry.path())?;
-            let metadata: Metadata = serde_json::from_slice(&s)
-                .expect(&format!("Malformed JSON file at {:?}", entry.path()));
-            let metadata = metadata.latest();
+            let metadata = Metadata::try_from(std::fs::File::open(entry.path())?)?.latest();
             binaries.push(metadata);
         }
 
         binaries.sort_by(|a, b| a.binary_name.cmp(&b.binary_name));
 
         Ok(binaries)
+    }
+}
+
+impl std::convert::TryFrom<std::fs::File> for Metadata {
+    type Error = std::io::Error;
+
+    fn try_from(file: std::fs::File) -> Result<Self, Self::Error> {
+        use std::io::{BufRead, BufReader};
+        let reader = BufReader::new(file);
+
+        for line in reader.lines() {
+            let line = line?;
+            if line.starts_with("# metadata: ") {
+                let metadata: Metadata = serde_json::from_slice(
+                    &base64::decode(line.trim_start_matches("# metadata: "))
+                        .ok()
+                        .ok_or(std::io::ErrorKind::UnexpectedEof)?,
+                )
+                .ok()
+                .ok_or(std::io::ErrorKind::UnexpectedEof)?;
+                return Ok(metadata);
+            }
+        }
+
+        Err(std::io::ErrorKind::UnexpectedEof.into())
     }
 }

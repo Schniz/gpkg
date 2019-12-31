@@ -29,16 +29,17 @@ fn package_metadata_for_requested_package(
     }
 }
 
-fn infer_current_node_version() -> String {
+fn infer_current_node_version() -> std::io::Result<String> {
     let cmd = Command::new("node")
         .arg("--version")
         .stdout(Stdio::piped())
-        .output()
-        .expect("Can't understand Node version");
-    std::str::from_utf8(&cmd.stdout)
-        .expect("Can't decode Node version")
+        .output()?;
+    let version = std::str::from_utf8(&cmd.stdout)
+        .ok()
+        .ok_or(std::io::ErrorKind::UnexpectedEof)?
         .trim()
-        .into()
+        .to_string();
+    Ok(version)
 }
 
 use crate::config::Config;
@@ -62,7 +63,7 @@ pub fn install_package(
     requested_package: &NodePackageVersion,
     config: &Config,
 ) -> Result<(), Errors> {
-    let node_version = infer_current_node_version();
+    let node_version = infer_current_node_version()?;
     debug!("Current node version: {}", node_version);
     let node_binary_path = get_node_binary_location();
     debug!(
@@ -101,16 +102,17 @@ pub fn install_package(
             package_name: requested_package.name().to_string(),
             node_version: node_version.to_string(),
         });
-        std::fs::write(
-            Metadata::path_for(binary_name, config),
-            serde_json::to_string(&metadata)?,
-        )?;
         let target_binary_path = teleport_path
             .join("node_modules")
             .join(".bin")
             .join(binary_name);
         let script_path = config.bin_dir().join(binary_name);
-        let binary = Binary::new(&script_path, &target_binary_path, &node_binary_path);
+        let binary = Binary::new(
+            metadata,
+            &script_path,
+            &target_binary_path,
+            &node_binary_path,
+        );
         binary.create_script().expect("Can't create script");
     }
 
@@ -151,6 +153,7 @@ mod tests {
 use std::path::Path;
 
 struct Binary<P1: AsRef<Path>, P2: AsRef<Path>, NodePath: AsRef<Path>> {
+    metadata: Metadata,
     symlink_path: P1,
     target_path: P2,
     node_binary_path: NodePath,
@@ -176,8 +179,9 @@ fn get_node_binary_location() -> std::path::PathBuf {
 }
 
 impl<P1: AsRef<Path>, P2: AsRef<Path>, P3: AsRef<Path>> Binary<P1, P2, P3> {
-    pub fn new(symlink_path: P1, target_path: P2, node_path: P3) -> Self {
+    pub fn new(metadata: Metadata, symlink_path: P1, target_path: P2, node_path: P3) -> Self {
         Self {
+            metadata,
             symlink_path,
             target_path,
             node_binary_path: node_path,
@@ -193,9 +197,11 @@ impl<P1: AsRef<Path>, P2: AsRef<Path>, P3: AsRef<Path>> Binary<P1, P2, P3> {
         let source = format!(
             r#"
                 #!/bin/sh
+                # metadata: {metadata_json}
                 export PATH={node_binary_path:?}:$PATH
                 {binary_path:?} "$@"
             "#,
+            metadata_json = base64::encode(&serde_json::to_string(&self.metadata).unwrap()),
             binary_path = self.target_path.as_ref(),
             node_binary_path = binary_path,
         );
