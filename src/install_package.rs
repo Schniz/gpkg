@@ -1,4 +1,5 @@
 use crate::from;
+use crate::node_package_version::NodePackageVersion;
 use crate::package_json::{PackageEngines, PackageRoot};
 use log::*;
 use serde::{Deserialize, Serialize};
@@ -11,15 +12,15 @@ pub struct InstalledPackage {
 }
 
 fn package_metadata_for_requested_package(
-    dependency: impl Into<String> + Copy,
-    version: Option<String>,
+    dependency: &str,
+    version: &str,
     current_node_version: impl Into<String>,
 ) -> PackageRoot {
     PackageRoot {
-        name: format!("{}_global_installation", dependency.into()),
+        name: format!("{}_global_installation", dependency.to_string()),
         dependencies: {
             let mut deps = HashMap::default();
-            deps.insert(dependency.into(), version.unwrap_or("*".into()));
+            deps.insert(dependency.into(), version.to_string());
             deps
         },
         engines: PackageEngines {
@@ -57,7 +58,10 @@ from!(Errors, {
     serde_json::Error => SerdeError
 });
 
-pub fn install_package(name: &str, version: Option<String>, config: &Config) -> Result<(), Errors> {
+pub fn install_package(
+    requested_package: &NodePackageVersion,
+    config: &Config,
+) -> Result<(), Errors> {
     let node_version = infer_current_node_version();
     debug!("Current node version: {}", node_version);
     let node_binary_path = get_node_binary_location();
@@ -65,9 +69,13 @@ pub fn install_package(name: &str, version: Option<String>, config: &Config) -> 
         "Current node binary path: {}",
         node_binary_path.as_path().display()
     );
-    let package = package_metadata_for_requested_package(name, version, &node_version);
+    let package = package_metadata_for_requested_package(
+        requested_package.name(),
+        requested_package.version(),
+        &node_version,
+    );
     let package_json_contents = serde_json::to_string_pretty(&package).unwrap();
-    let target_path = config.installations_dir().join(name);
+    let target_path = config.installations_dir().join(requested_package.name());
     if target_path.exists() {
         return Err(Errors::PackageAlreadyInstalled);
     }
@@ -77,7 +85,10 @@ pub fn install_package(name: &str, version: Option<String>, config: &Config) -> 
 
     npm::install(&portal).expect("Can't access status code");
 
-    let installed_package_json_path = portal.join("node_modules").join(name).join("package.json");
+    let installed_package_json_path = portal
+        .join("node_modules")
+        .join(requested_package.name())
+        .join("package.json");
     let installed_package_json = std::fs::read_to_string(&installed_package_json_path)
         .expect("Can't open package.json file");
     let installed_package: InstalledPackage = serde_json::from_str(&installed_package_json)?;
@@ -87,7 +98,7 @@ pub fn install_package(name: &str, version: Option<String>, config: &Config) -> 
     for binary_name in installed_package.bin.keys() {
         let metadata = Metadata::V1(LatestMetadata {
             binary_name: binary_name.to_string(),
-            package_name: name.to_string(),
+            package_name: requested_package.name().to_string(),
             node_version: node_version.to_string(),
         });
         std::fs::write(
@@ -110,12 +121,14 @@ pub fn install_package(name: &str, version: Option<String>, config: &Config) -> 
 mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
+    use std::str::FromStr;
 
     #[test]
     fn test() {
         env_logger::builder().is_test(true).init();
         let config = Config::default();
-        install_package("qnm", Some("1.0.1".into()), &config).expect("Can't install qnm");
+        let package = NodePackageVersion::from_str("qnm@1.0.1").unwrap();
+        install_package(&package, &config).expect("Can't install qnm");
         let only_child = config
             .bin_dir()
             .read_dir()

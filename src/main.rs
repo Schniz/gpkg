@@ -7,6 +7,7 @@ mod install_package;
 mod npm;
 mod package_json;
 mod storage;
+mod node_package_version;
 
 use cli::Cli;
 use env_logger;
