@@ -11,6 +11,10 @@ enum Commands {
     /// Generate completions for your shell
     #[structopt(name = "completions")]
     Completions(commands::Completions),
+
+    /// List all installed binaries
+    #[structopt(name = "list")]
+    List(commands::List),
 }
 
 impl Commands {
@@ -18,6 +22,7 @@ impl Commands {
         match self {
             Self::Install(cmd) => cmd.call(config),
             Self::Completions(cmd) => cmd.call(config),
+            Self::List(cmd) => cmd.call(config),
         }
     }
 }

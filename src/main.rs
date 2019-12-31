@@ -2,9 +2,11 @@ mod cli;
 mod commands;
 mod config;
 mod directory_portal;
+mod from;
 mod install_package;
 mod npm;
 mod package_json;
+mod storage;
 
 use cli::Cli;
 use env_logger;

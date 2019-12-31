@@ -1,3 +1,4 @@
+use crate::from;
 use crate::package_json::{PackageEngines, PackageRoot};
 use log::*;
 use serde::{Deserialize, Serialize};
@@ -42,6 +43,7 @@ fn infer_current_node_version() -> String {
 use crate::config::Config;
 use crate::directory_portal::DirectoryPortal;
 use crate::npm;
+use crate::storage::{LatestMetadata, Metadata};
 
 #[derive(Debug)]
 pub enum Errors {
@@ -50,17 +52,10 @@ pub enum Errors {
     PackageAlreadyInstalled,
 }
 
-impl From<std::io::Error> for Errors {
-    fn from(err: std::io::Error) -> Self {
-        Self::IoError(err)
-    }
-}
-
-impl From<serde_json::Error> for Errors {
-    fn from(err: serde_json::Error) -> Self {
-        Self::SerdeError(err)
-    }
-}
+from!(Errors, {
+    std::io::Error => IoError,
+    serde_json::Error => SerdeError
+});
 
 pub fn install_package(name: &str, version: Option<String>, config: &Config) -> Result<(), Errors> {
     let node_version = infer_current_node_version();
@@ -90,6 +85,15 @@ pub fn install_package(name: &str, version: Option<String>, config: &Config) -> 
     let teleport_path = portal.teleport()?;
 
     for binary_name in installed_package.bin.keys() {
+        let metadata = Metadata::V1(LatestMetadata {
+            binary_name: binary_name.to_string(),
+            package_name: name.to_string(),
+            node_version: node_version.to_string(),
+        });
+        std::fs::write(
+            config.db_path().join(&binary_name).with_extension("json"),
+            serde_json::to_string(&metadata)?,
+        )?;
         let target_binary_path = teleport_path
             .join("node_modules")
             .join(".bin")
