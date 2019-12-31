@@ -1,9 +1,9 @@
 use super::Command;
 use crate::config::Config;
 use crate::install_package;
+use crate::node_package_version::NodePackageVersion;
 use log::*;
 use structopt::StructOpt;
-use crate::node_package_version::NodePackageVersion;
 
 #[derive(StructOpt, Debug)]
 pub struct Install {
