@@ -4,6 +4,7 @@ mod config;
 mod directory_portal;
 mod from;
 mod install_package;
+mod node_package_version;
 mod npm;
 mod package_json;
 mod storage;
