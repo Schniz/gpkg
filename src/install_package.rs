@@ -51,7 +51,7 @@ use crate::storage::{LatestMetadata, Metadata};
 pub enum Errors {
     IoError(std::io::Error),
     SerdeError(serde_json::Error),
-    PackageAlreadyInstalled,
+    PackageAlreadyInstalled(String),
 }
 
 from!(Errors, {
@@ -78,7 +78,9 @@ pub fn install_package(
     let package_json_contents = serde_json::to_string_pretty(&package).unwrap();
     let target_path = config.installations_dir().join(requested_package.name());
     if target_path.exists() {
-        return Err(Errors::PackageAlreadyInstalled);
+        return Err(Errors::PackageAlreadyInstalled(
+            requested_package.name().to_string(),
+        ));
     }
     let portal = DirectoryPortal::new(&target_path);
     std::fs::write(portal.join("package.json"), package_json_contents)
@@ -130,7 +132,7 @@ mod tests {
         env_logger::builder().is_test(true).init();
         let config = Config::default();
         let package = NodePackageVersion::from_str("qnm@1.0.1").unwrap();
-        install_package(&package, &config).expect("Can't install qnm");
+        install_package(package, &config).expect("Can't install qnm");
         let only_child = config
             .bin_dir()
             .read_dir()

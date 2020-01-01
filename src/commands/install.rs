@@ -21,7 +21,20 @@ impl Command for Install {
     }
 
     fn handle_error(err: Self::Error) {
-        dbg!(err);
-        unimplemented!();
+        match err {
+            Self::Error::PackageAlreadyInstalled(pkg) => {
+                use colored::*;
+                let err_str = format!(
+                    "Package {} is already installed.\n",
+                    pkg.underline().italic(),
+                )
+                .red();
+                eprintln!("{}", err_str);
+            }
+            err => {
+                dbg!(err);
+                unimplemented!();
+            }
+        }
     }
 }
