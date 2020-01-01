@@ -2,6 +2,7 @@ use super::Command;
 use crate::config::Config;
 use crate::install_package;
 use crate::node_package_version::NodePackageVersion;
+use colored::*;
 use log::*;
 use structopt::StructOpt;
 
@@ -23,12 +24,8 @@ impl Command for Install {
     fn handle_error(err: Self::Error) {
         match err {
             Self::Error::PackageAlreadyInstalled(pkg) => {
-                use colored::*;
-                let err_str = format!(
-                    "Package {} is already installed.\n",
-                    pkg.underline().italic(),
-                )
-                .red();
+                let err_str =
+                    format!("Package {} is already installed.", pkg.underline().italic()).red();
                 eprintln!("{}", err_str);
             }
             err => {
