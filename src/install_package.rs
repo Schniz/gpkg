@@ -132,7 +132,7 @@ mod tests {
         env_logger::builder().is_test(true).init();
         let config = Config::default();
         let package = NodePackageVersion::from_str("qnm@1.0.1").unwrap();
-        install_package(package, &config).expect("Can't install qnm");
+        install_package(&package, &config).expect("Can't install qnm");
         let only_child = config
             .bin_dir()
             .read_dir()
