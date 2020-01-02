@@ -1,8 +1,8 @@
 use super::Command;
+use colored::*;
 use gpkg_lib::config::Config;
 use gpkg_lib::install_package;
 use gpkg_lib::node_package_version::NodePackageVersion;
-use colored::*;
 use log::*;
 use structopt::StructOpt;
 
