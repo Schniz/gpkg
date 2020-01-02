@@ -1,6 +1,9 @@
 use std::path::PathBuf;
 use structopt::StructOpt;
 
+// TODO: this should be in the binary, and the library shouldn't get an entire config
+// it'll be more testable and config just for the binary just makes sense
+
 #[derive(Debug, StructOpt)]
 pub struct Config {
     /// Gpkg root directory
