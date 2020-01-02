@@ -1,6 +1,6 @@
-use crate::config::Config;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
+use std::path::Path;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MetadataV1 {
@@ -24,13 +24,9 @@ impl Metadata {
         }
     }
 
-    pub fn path_for(binary_name: &str, config: &Config) -> std::path::PathBuf {
-        config.db_path().join(binary_name).with_extension("json")
-    }
-
-    pub fn read_all(config: &Config) -> std::io::Result<Vec<LatestMetadata>> {
+    pub fn read_all<BinDir: AsRef<Path>>(bin_dir: BinDir) -> std::io::Result<Vec<LatestMetadata>> {
         let mut binaries = vec![];
-        let metadata_entries = config.bin_dir().read_dir()?.filter_map(Result::ok);
+        let metadata_entries = bin_dir.as_ref().read_dir()?.filter_map(Result::ok);
 
         for entry in metadata_entries {
             let metadata = Metadata::try_from(std::fs::File::open(entry.path())?)?.latest();

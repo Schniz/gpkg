@@ -1,6 +1,6 @@
 use super::Command;
 use crate::cli::Cli;
-use gpkg_lib::config::Config;
+use crate::config::Config;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]

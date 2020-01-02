@@ -1,9 +1,6 @@
 use std::path::PathBuf;
 use structopt::StructOpt;
 
-// TODO: this should be in the binary, and the library shouldn't get an entire config
-// it'll be more testable and config just for the binary just makes sense
-
 #[derive(Debug, StructOpt)]
 pub struct Config {
     /// Gpkg root directory
@@ -29,14 +26,6 @@ impl Config {
 
     pub fn bin_dir(&self) -> PathBuf {
         let path = self.root_dir().join("bin");
-        if !path.exists() {
-            std::fs::create_dir_all(&path).expect("Can't create installations dir");
-        }
-        path
-    }
-
-    pub fn db_path(&self) -> PathBuf {
-        let path = self.root_dir().join("metadata");
         if !path.exists() {
             std::fs::create_dir_all(&path).expect("Can't create installations dir");
         }

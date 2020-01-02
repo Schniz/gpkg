@@ -1,5 +1,5 @@
 use crate::commands::{self, Command};
-use gpkg_lib::config::Config;
+use crate::config::Config;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]

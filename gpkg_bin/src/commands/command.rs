@@ -1,4 +1,4 @@
-use gpkg_lib::config::Config;
+use crate::config::Config;
 
 /// A command line interface command
 pub trait Command: Sized {
