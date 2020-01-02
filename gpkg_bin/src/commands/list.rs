@@ -1,6 +1,6 @@
 use super::Command;
-use crate::config::Config;
-use crate::storage::Metadata;
+use gpkg_lib::config::Config;
+use gpkg_lib::storage::Metadata;
 use colored::*;
 
 use structopt::StructOpt;

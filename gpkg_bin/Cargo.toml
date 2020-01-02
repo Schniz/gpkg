@@ -1,0 +1,24 @@
+[package]
+name = "gpkg_bin"
+version = "0.1.0"
+authors = ["Gal Schlezinger <gal@spitfire.co.il>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = "2.33.0"
+structopt = "0.3.5"
+tempdir = "0.3.7"
+serde = { version = "1.0.104", features = ["derive"] }
+serde_json = "1.0.44"
+unindent = "0.1.5"
+dirs = "2.0.2"
+log = "0.4.8"
+env_logger = "0.7.1"
+colored = "1.9.0"
+base64 = "0.11.0"
+gpkg_lib = { path = "../gpkg_lib" }
+
+[dev-dependencies]
+pretty_assertions = "0.6.1"
