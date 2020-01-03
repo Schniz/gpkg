@@ -1,9 +1,14 @@
+use crate::binary::Binary;
+use crate::directory_portal::DirectoryPortal;
 use crate::from;
 use crate::node_package_version::NodePackageVersion;
+use crate::npm;
 use crate::package_json::{PackageEngines, PackageRoot};
+use crate::storage::{LatestMetadata, Metadata};
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::path::Path;
 use std::process::{Command, Stdio};
 
 #[derive(Serialize, Deserialize)]
@@ -42,11 +47,6 @@ fn infer_current_node_version() -> std::io::Result<String> {
     Ok(version)
 }
 
-use crate::config::Config;
-use crate::directory_portal::DirectoryPortal;
-use crate::npm;
-use crate::storage::{LatestMetadata, Metadata};
-
 #[derive(Debug)]
 pub enum Errors {
     IoError(std::io::Error),
@@ -59,9 +59,10 @@ from!(Errors, {
     serde_json::Error => SerdeError
 });
 
-pub fn install_package(
+pub fn install_package<InstallationDir: AsRef<Path>, BinDir: AsRef<Path>>(
     requested_package: &NodePackageVersion,
-    config: &Config,
+    installation_dir: InstallationDir,
+    bin_dir: BinDir,
 ) -> Result<(), Errors> {
     let node_version = infer_current_node_version()?;
     debug!("Current node version: {}", node_version);
@@ -76,7 +77,7 @@ pub fn install_package(
         &node_version,
     );
     let package_json_contents = serde_json::to_string_pretty(&package).unwrap();
-    let target_path = config.installations_dir().join(requested_package.name());
+    let target_path = installation_dir.as_ref().join(requested_package.name());
     if target_path.exists() {
         return Err(Errors::PackageAlreadyInstalled(
             requested_package.name().to_string(),
@@ -108,7 +109,7 @@ pub fn install_package(
             .join("node_modules")
             .join(".bin")
             .join(binary_name);
-        let script_path = config.bin_dir().join(binary_name);
+        let script_path = bin_dir.as_ref().join(binary_name);
         let binary = Binary::new(
             metadata,
             &script_path,
@@ -119,46 +120,6 @@ pub fn install_package(
     }
 
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use pretty_assertions::assert_eq;
-    use std::str::FromStr;
-
-    #[test]
-    fn test() {
-        env_logger::builder().is_test(true).init();
-        let config = Config::default();
-        let package = NodePackageVersion::from_str("qnm@1.0.1").unwrap();
-        install_package(&package, &config).expect("Can't install qnm");
-        let only_child = config
-            .bin_dir()
-            .read_dir()
-            .expect("Can't read temp dir")
-            .next()
-            .expect("No files in temp dir")
-            .expect("Can't access bin file");
-        let stdout = Command::new(only_child.path())
-            .arg("--version")
-            .output()
-            .expect("Can't read output from command")
-            .stdout;
-        let version = std::str::from_utf8(&stdout)
-            .expect("Can't decode output")
-            .trim();
-        assert_eq!(version, "1.0.1");
-    }
-}
-
-use std::path::Path;
-
-struct Binary<P1: AsRef<Path>, P2: AsRef<Path>, NodePath: AsRef<Path>> {
-    metadata: Metadata,
-    symlink_path: P1,
-    target_path: P2,
-    node_binary_path: NodePath,
 }
 
 // Still not sure whether to add `fnm exec {version} {node args}`
@@ -180,56 +141,38 @@ fn get_node_binary_location() -> std::path::PathBuf {
     node_path
 }
 
-impl<P1: AsRef<Path>, P2: AsRef<Path>, P3: AsRef<Path>> Binary<P1, P2, P3> {
-    pub fn new(metadata: Metadata, symlink_path: P1, target_path: P2, node_path: P3) -> Self {
-        Self {
-            metadata,
-            symlink_path,
-            target_path,
-            node_binary_path: node_path,
-        }
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::assert_eq;
+    use std::str::FromStr;
+
+    #[test]
+    fn test() {
+        env_logger::builder().is_test(true).init();
+
+        let installation_dir = tempdir::TempDir::new("installations").unwrap();
+        let bin_dir = tempdir::TempDir::new("bin").unwrap();
+        let package = NodePackageVersion::from_str("qnm@1.0.1").unwrap();
+
+        install_package(&package, installation_dir.path(), bin_dir.path())
+            .expect("Can't install qnm");
+
+        let only_child = bin_dir
+            .path()
+            .read_dir()
+            .expect("Can't read temp dir")
+            .next()
+            .expect("No files in temp dir")
+            .expect("Can't access bin file");
+        let stdout = Command::new(only_child.path())
+            .arg("--version")
+            .output()
+            .expect("Can't read output from command")
+            .stdout;
+        let version = std::str::from_utf8(&stdout)
+            .expect("Can't decode output")
+            .trim();
+        assert_eq!(version, "1.0.1");
     }
-
-    pub fn script_src(&self) -> String {
-        let binary_path = self
-            .node_binary_path
-            .as_ref()
-            .parent()
-            .expect("Got node with no parent");
-        let source = format!(
-            r#"
-                #!/bin/sh
-                # metadata: {metadata_json}
-                export PATH={node_binary_path:?}:$PATH
-                {binary_path:?} "$@"
-            "#,
-            metadata_json = base64::encode(&serde_json::to_string(&self.metadata).unwrap()),
-            binary_path = self.target_path.as_ref(),
-            node_binary_path = binary_path,
-        );
-        unindent::unindent(&source)
-    }
-
-    pub fn create_script(self) -> std::io::Result<P1> {
-        let src = self.script_src();
-        std::fs::write(&self.symlink_path, &src)?;
-        set_permissions(&self.symlink_path)?;
-
-        Ok(self.symlink_path)
-    }
-}
-
-#[cfg(unix)]
-fn set_permissions(script_path: impl AsRef<Path>) -> std::io::Result<()> {
-    use std::os::unix::fs::PermissionsExt;
-    let metadata = script_path.as_ref().metadata()?;
-    let mut permissions = metadata.permissions();
-    permissions.set_mode(0o744); // set executable
-    std::fs::set_permissions(&script_path, permissions)?;
-    Ok(())
-}
-
-#[cfg(windows)]
-fn set_permissions(_script_path: impl AsRef<Path>) -> std::io::Result<()> {
-    Ok(())
 }

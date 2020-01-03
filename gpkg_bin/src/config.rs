@@ -31,14 +31,6 @@ impl Config {
         }
         path
     }
-
-    pub fn db_path(&self) -> PathBuf {
-        let path = self.root_dir().join("metadata");
-        if !path.exists() {
-            std::fs::create_dir_all(&path).expect("Can't create installations dir");
-        }
-        path
-    }
 }
 
 #[cfg(test)]

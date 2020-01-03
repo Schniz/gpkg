@@ -1,8 +1,8 @@
 use super::Command;
 use crate::config::Config;
-use crate::install_package;
-use crate::node_package_version::NodePackageVersion;
 use colored::*;
+use gpkg_lib::install_package;
+use gpkg_lib::node_package_version::NodePackageVersion;
 use log::*;
 use structopt::StructOpt;
 
@@ -17,7 +17,11 @@ impl Command for Install {
 
     fn apply(self, config: Config) -> Result<(), Self::Error> {
         debug!("Installing package {:?}", &self.package);
-        install_package::install_package(&self.package, &config)?;
+        install_package::install_package(
+            &self.package,
+            config.installations_dir(),
+            config.bin_dir(),
+        )?;
         Ok(())
     }
 
