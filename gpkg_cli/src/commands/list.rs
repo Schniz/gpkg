@@ -2,7 +2,6 @@ use super::Command;
 use crate::config::Config;
 use colored::*;
 use gpkg::storage::Metadata;
-
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
