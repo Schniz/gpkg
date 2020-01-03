@@ -3,8 +3,9 @@ use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
 pub struct Config {
-    /// Gpkg root directory
-    #[structopt(env = "GPKG_ROOT_DIR", name = "root-dir")]
+    /// Gpkg root directory.
+    /// Defaults to the `.gpkg` directory in the user home dir
+    #[structopt(env = "GPKG_ROOT_DIR", long = "root-dir")]
     root_dir: Option<PathBuf>,
 }
 
