@@ -1,8 +1,8 @@
 use super::Command;
 use crate::config::Config;
 use colored::*;
-use gpkg_lib::install_package;
-use gpkg_lib::node_package_version::NodePackageVersion;
+use gpkg::install_package;
+use gpkg::node_package_version::NodePackageVersion;
 use log::*;
 use structopt::StructOpt;
 

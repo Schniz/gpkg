@@ -1,7 +1,7 @@
 use super::Command;
 use crate::config::Config;
 use colored::*;
-use gpkg_lib::storage::Metadata;
+use gpkg::storage::Metadata;
 
 use structopt::StructOpt;
 

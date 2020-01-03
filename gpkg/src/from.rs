@@ -2,7 +2,7 @@
 ///
 /// ```rust
 /// #[macro_use]
-/// extern crate gpkg_lib;
+/// extern crate gpkg;
 ///
 /// #[derive(Debug)]
 /// enum Errors {

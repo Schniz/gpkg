@@ -1,5 +1,5 @@
 [package]
-name = "gpkg_lib"
+name = "gpkg"
 version = "0.1.0"
 authors = ["Gal Schlezinger <gal@spitfire.co.il>"]
 edition = "2018"
