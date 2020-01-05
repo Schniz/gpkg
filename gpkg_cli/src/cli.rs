@@ -5,7 +5,7 @@ use structopt::StructOpt;
 #[derive(Debug, StructOpt)]
 enum Commands {
     /// Install global binaries from npm
-    #[structopt(name = "install")]
+    #[structopt(name = "install", alias = "add", alias = "i")]
     Install(commands::Install),
 
     /// Generate completions for your shell
@@ -13,11 +13,11 @@ enum Commands {
     Completions(commands::Completions),
 
     /// List all installed binaries
-    #[structopt(name = "list")]
+    #[structopt(name = "list", alias = "ls")]
     List(commands::List),
 
     /// Uninstall a package
-    #[structopt(name = "uninstall")]
+    #[structopt(name = "uninstall", alias = "remove")]
     Uninstall(commands::Uninstall),
 }
 
