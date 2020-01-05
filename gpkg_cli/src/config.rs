@@ -2,10 +2,11 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
+#[structopt(rename_all = "kebab-case")]
 pub struct Config {
     /// Gpkg root directory.
     /// Defaults to the `.gpkg` directory in the user home dir
-    #[structopt(env = "GPKG_ROOT_DIR", long = "root-dir")]
+    #[structopt(env = "GPKG_ROOT_DIR", long)]
     root_dir: Option<PathBuf>,
 }
 
