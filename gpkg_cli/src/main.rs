@@ -1,6 +1,7 @@
 mod cli;
 mod commands;
 mod config;
+mod print_format;
 
 use cli::Cli;
 use env_logger;
