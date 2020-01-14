@@ -1,3 +1,4 @@
+mod print_format;
 mod cli;
 mod commands;
 mod config;

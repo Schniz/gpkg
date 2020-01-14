@@ -17,7 +17,7 @@ enum Commands {
     List(commands::List),
 
     /// Uninstall a package
-    #[structopt(name = "uninstall", alias = "remove")]
+    #[structopt(name = "uninstall", alias = "remove", alias = "rm")]
     Uninstall(commands::Uninstall),
 }
 
