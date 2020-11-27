@@ -33,7 +33,7 @@ jobs:
       env:
         RUST_LOG: debug
         RUST_BACKTRACE: 1
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v2
       with:
         name: gpkg-${{ matrix.machine }}
         path: ./target/release/gpkg
