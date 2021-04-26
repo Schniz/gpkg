@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 tempdir = "0.3.7"
-serde = { version = "1.0.104", features = ["derive"] }
+serde = { version = "1.0.125", features = ["derive"] }
 serde_json = "1.0.44"
 unindent = "0.1.5"
 log = "0.4.8"
