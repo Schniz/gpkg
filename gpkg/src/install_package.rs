@@ -13,7 +13,30 @@ use std::process::{Command, Stdio};
 
 #[derive(Serialize, Deserialize)]
 pub struct InstalledPackage {
-    bin: HashMap<String, String>,
+    name: String,
+    bin: PackageBinary,
+}
+
+impl InstalledPackage {
+    fn binaries(self) -> HashMap<String, String> {
+        match self.bin {
+            PackageBinary::Single(state) => {
+                let mut bin = HashMap::new();
+                bin.insert(self.name, state);
+                bin
+            }
+            PackageBinary::Multiple(state) => {
+                state
+            }
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(untagged)]
+enum PackageBinary {
+    Single(String),
+    Multiple(HashMap<String, String>),
 }
 
 fn package_metadata_for_requested_package(
@@ -99,7 +122,7 @@ pub fn install_package<InstallationDir: AsRef<Path>, BinDir: AsRef<Path>>(
 
     let teleport_path = portal.teleport()?;
 
-    for binary_name in installed_package.bin.keys() {
+    for binary_name in installed_package.binaries().keys() {
         let metadata = Metadata::V1(LatestMetadata {
             binary_name: binary_name.to_string(),
             package_name: requested_package.name().to_string(),
