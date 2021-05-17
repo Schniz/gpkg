@@ -22,7 +22,10 @@ fn package_metadata_for_requested_package(
     current_node_version: impl Into<String>,
 ) -> PackageRoot {
     PackageRoot {
-        name: format!("{}_global_installation", dependency.to_string()),
+        name: format!(
+            "{}_global_installation",
+            dependency.to_string().replace("/", "__").replace("@", "")
+        ),
         dependencies: {
             let mut deps = HashMap::default();
             deps.insert(dependency.into(), version.to_string());
@@ -77,13 +80,15 @@ pub fn install_package<InstallationDir: AsRef<Path>, BinDir: AsRef<Path>>(
         &node_version,
     );
     let package_json_contents = serde_json::to_string_pretty(&package).unwrap();
-    let target_path = installation_dir.as_ref().join(requested_package.name());
+    let target_path = installation_dir
+        .as_ref()
+        .join(requested_package.name().replace("/", "__"));
     if target_path.exists() {
         return Err(Errors::PackageAlreadyInstalled(
             requested_package.name().to_string(),
         ));
     }
-    let portal = DirectoryPortal::new(&target_path);
+    let portal = DirectoryPortal::new_in(std::env::temp_dir(), &target_path);
     std::fs::write(portal.join("package.json"), package_json_contents)
         .expect("Can't write package.json file");
 
