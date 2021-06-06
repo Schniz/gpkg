@@ -9,7 +9,7 @@ jobs:
     - uses: hecrj/setup-rust-action@v1
       with:
         rust-version: stable
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: cargo fmt
       run: cargo fmt -- --check
 
@@ -22,7 +22,7 @@ jobs:
           - macos
         # - windows
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - uses: hecrj/setup-rust-action@v1
       with:
         rust-version: stable
