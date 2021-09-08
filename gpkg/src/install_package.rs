@@ -1,6 +1,5 @@
 use crate::binary::Binary;
 use crate::directory_portal::DirectoryPortal;
-use crate::from;
 use crate::node_package_version::NodePackageVersion;
 use crate::npm;
 use crate::package_json::{PackageEngines, PackageRoot};
