@@ -5,6 +5,7 @@ use colored::*;
 use gpkg::storage::{LatestMetadata, Metadata};
 use prettytable::*;
 use structopt::StructOpt;
+use thiserror::Error;
 
 #[derive(Debug, StructOpt)]
 pub struct List {
@@ -12,21 +13,25 @@ pub struct List {
     format: PrintFormat,
 }
 
+#[derive(Debug, Error, miette::Diagnostic)]
+pub enum Errors {
+    #[error("Can't read files\n{cause}")]
+    #[diagnostic()]
+    CantReadFiles { cause: std::io::Error },
+}
+
 impl Command for List {
-    type Error = ();
+    type Error = Errors;
 
     fn apply(self, config: Config) -> Result<(), Self::Error> {
-        let binaries = Metadata::read_all(config.bin_dir()).expect("Can't read files");
+        let binaries = Metadata::read_all(config.bin_dir())
+            .map_err(|cause| Errors::CantReadFiles { cause })?;
         match self.format {
             PrintFormat::List => print_metadata_pretty_list(&binaries),
             PrintFormat::Table => print_metadata_pretty_table(&binaries),
             PrintFormat::Json => print_metadata_json(&binaries),
         }
         Ok(())
-    }
-
-    fn handle_error(err: Self::Error) {
-        dbg!(err);
     }
 }
 

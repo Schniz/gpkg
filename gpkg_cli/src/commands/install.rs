@@ -1,6 +1,5 @@
 use super::Command;
 use crate::config::Config;
-use colored::*;
 use gpkg::install_package;
 use gpkg::node_package_version::NodePackageVersion;
 use log::*;
@@ -23,19 +22,5 @@ impl Command for Install {
             config.bin_dir(),
         )?;
         Ok(())
-    }
-
-    fn handle_error(err: Self::Error) {
-        match err {
-            Self::Error::PackageAlreadyInstalled(pkg) => {
-                let err_str =
-                    format!("Package {} is already installed.", pkg.underline().italic()).red();
-                eprintln!("{}", err_str);
-            }
-            err => {
-                dbg!(err);
-                unimplemented!();
-            }
-        }
     }
 }

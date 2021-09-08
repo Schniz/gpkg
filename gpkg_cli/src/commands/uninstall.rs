@@ -4,16 +4,44 @@ use colored::*;
 use gpkg::node_package_version::NodePackageVersion;
 use gpkg::storage::Metadata;
 use structopt::StructOpt;
+use thiserror::Error;
 
 #[derive(StructOpt, Debug)]
 pub struct Uninstall {
     version: NodePackageVersion,
 }
 
+#[derive(Debug, Error, miette::Diagnostic)]
+pub enum Errors {
+    #[error("Can't read metadata files")]
+    #[diagnostic()]
+    CantReadMetadataFiles {
+        #[source]
+        source: std::io::Error,
+    },
+
+    #[error("Can't delete file {binary_path:?}")]
+    #[diagnostic()]
+    CantDeleteFile {
+        binary_path: std::path::PathBuf,
+        #[source]
+        source: std::io::Error,
+    },
+
+    #[error("Can't delete directory {package_path:?}")]
+    #[diagnostic()]
+    CantRemoveDirectory {
+        package_path: std::path::PathBuf,
+        #[source]
+        source: std::io::Error,
+    },
+}
+
 impl Command for Uninstall {
-    type Error = ();
+    type Error = Errors;
     fn apply(self, config: Config) -> Result<(), Self::Error> {
-        let binaries = Metadata::read_all(config.bin_dir()).expect("Can't read metadata files");
+        let binaries = Metadata::read_all(config.bin_dir())
+            .map_err(|source| Errors::CantReadMetadataFiles { source })?;
         let binaries = binaries
             .iter()
             .filter(|metadata| metadata.package_name == self.version.name());
@@ -22,16 +50,22 @@ impl Command for Uninstall {
             let binary_name = &binary_metadata.binary_name;
             let binary_path = config.bin_dir().join(binary_name);
 
-            std::fs::remove_file(&binary_path)
-                .expect(&format!("Can't delete file {:?}", binary_path));
+            std::fs::remove_file(&binary_path).map_err(|source| Errors::CantDeleteFile {
+                binary_path,
+                source,
+            })?;
 
             println!("Deleted binary {}", binary_metadata.binary_name.cyan());
         }
 
         let package_path = config.installations_dir().join(self.version.name());
         if package_path.exists() {
-            std::fs::remove_dir_all(&package_path)
-                .expect(&format!("Can't remove directory {:?}", package_path));
+            std::fs::remove_dir_all(&package_path).map_err(|source| {
+                Errors::CantRemoveDirectory {
+                    package_path,
+                    source,
+                }
+            })?;
             println!("Removed package {}", self.version.name().cyan());
         } else {
             println!(
@@ -41,10 +75,5 @@ impl Command for Uninstall {
         }
 
         Ok(())
-    }
-
-    fn handle_error(err: Self::Error) {
-        dbg!(err);
-        unimplemented!();
     }
 }
