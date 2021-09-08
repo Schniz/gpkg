@@ -5,10 +5,11 @@ mod print_format;
 
 use cli::Cli;
 use env_logger;
+use miette::Result;
 use structopt::StructOpt;
 
-fn main() {
+fn main() -> Result<()> {
     env_logger::init();
-    let command = Cli::from_args();
-    command.call();
+    Cli::from_args().call()?;
+    Ok(())
 }

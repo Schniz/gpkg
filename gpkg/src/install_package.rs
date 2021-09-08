@@ -1,15 +1,16 @@
 use crate::binary::Binary;
 use crate::directory_portal::DirectoryPortal;
-use crate::from;
 use crate::node_package_version::NodePackageVersion;
 use crate::npm;
 use crate::package_json::{PackageEngines, PackageRoot};
 use crate::storage::{LatestMetadata, Metadata};
 use log::*;
+use miette::{Diagnostic, NamedSource, SourceOffset, SourceSpan};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::Path;
 use std::process::{Command, Stdio};
+use thiserror::Error;
 
 #[derive(Serialize, Deserialize)]
 pub struct InstalledPackage {
@@ -50,17 +51,26 @@ fn infer_current_node_version() -> std::io::Result<String> {
     Ok(version)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Error, Diagnostic)]
 pub enum Errors {
-    IoError(std::io::Error),
-    SerdeError(serde_json::Error),
+    #[error(transparent)]
+    #[diagnostic()]
+    IoError(#[from] std::io::Error),
+    #[error("Can't parse package.json")]
+    #[diagnostic(help("Please check what's going on in the package!"))]
+    SerdeError {
+        #[source]
+        error: serde_json::Error,
+        json: NamedSource,
+        #[snippet(json, message = "package.json")]
+        snip: SourceSpan,
+        #[highlight(snip, label = "here")]
+        highlight: SourceSpan,
+    },
+    #[diagnostic()]
+    #[error("Package {0:?} is already installed")]
     PackageAlreadyInstalled(String),
 }
-
-from!(Errors, {
-    std::io::Error => IoError,
-    serde_json::Error => SerdeError
-});
 
 pub fn install_package<InstallationDir: AsRef<Path>, BinDir: AsRef<Path>>(
     requested_package: &NodePackageVersion,
@@ -100,7 +110,21 @@ pub fn install_package<InstallationDir: AsRef<Path>, BinDir: AsRef<Path>>(
         .join("package.json");
     let installed_package_json = std::fs::read_to_string(&installed_package_json_path)
         .expect("Can't open package.json file");
-    let installed_package: InstalledPackage = serde_json::from_str(&installed_package_json)?;
+    let installed_package: InstalledPackage = serde_json::from_str(&installed_package_json)
+        .map_err(|error| {
+            let len = installed_package_json.len();
+            let x =
+                SourceOffset::from_location(&installed_package_json, error.line(), error.column());
+            Errors::SerdeError {
+                json: NamedSource::new(
+                    requested_package.name().to_string(),
+                    installed_package_json,
+                ),
+                snip: (0, len).into(),
+                highlight: (x.offset(), 1).into(),
+                error,
+            }
+        })?;
 
     let teleport_path = portal.teleport()?;
 

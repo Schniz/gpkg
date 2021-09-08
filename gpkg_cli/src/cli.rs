@@ -1,5 +1,6 @@
 use crate::commands::{self, Command};
 use crate::config::Config;
+use miette::Result;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
@@ -22,13 +23,14 @@ enum Commands {
 }
 
 impl Commands {
-    pub fn call(self, config: Config) {
+    pub fn call(self, config: Config) -> Result<()> {
         match self {
-            Self::Install(cmd) => cmd.call(config),
-            Self::Completions(cmd) => cmd.call(config),
-            Self::List(cmd) => cmd.call(config),
-            Self::Uninstall(cmd) => cmd.call(config),
-        }
+            Self::Install(cmd) => cmd.apply(config)?,
+            Self::Completions(cmd) => cmd.apply(config)?,
+            Self::List(cmd) => cmd.apply(config)?,
+            Self::Uninstall(cmd) => cmd.apply(config)?,
+        };
+        Ok(())
     }
 }
 
@@ -41,7 +43,7 @@ pub struct Cli {
 }
 
 impl Cli {
-    pub fn call(self) {
+    pub fn call(self) -> Result<()> {
         self.subcommand.call(self.config)
     }
 }
