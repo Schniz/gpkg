@@ -4,7 +4,6 @@ mod config;
 mod print_format;
 
 use cli::Cli;
-use env_logger;
 use miette::Result;
 use structopt::StructOpt;
 

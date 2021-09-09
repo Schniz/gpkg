@@ -19,7 +19,7 @@ impl NodePackageVersion {
 impl FromStr for NodePackageVersion {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut parts = s.trim().split("@");
+        let mut parts = s.trim().split('@');
         match (parts.next().map(str::trim), parts.next().map(str::trim)) {
             (Some(""), Some(name)) => Ok(Self {
                 name: format!("@{}", name),
