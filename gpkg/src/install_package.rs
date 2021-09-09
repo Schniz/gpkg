@@ -187,8 +187,7 @@ fn get_node_binary_location() -> std::path::PathBuf {
         .expect("Got an empty result")
         .trim();
     debug!("`which node` returned location {:?}", &location);
-    let node_path = std::fs::canonicalize(location).expect("Can't canonicalize node path");
-    node_path
+    std::fs::canonicalize(location).expect("Can't canonicalize node path")
 }
 
 #[cfg(test)]
