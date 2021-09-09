@@ -26,9 +26,7 @@ impl InstalledPackage {
                 bin.insert(self.name, state);
                 bin
             }
-            PackageBinary::Multiple(state) => {
-                state
-            }
+            PackageBinary::Multiple(state) => state,
         }
     }
 }
