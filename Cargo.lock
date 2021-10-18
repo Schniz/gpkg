@@ -158,7 +158,7 @@ dependencies = [
  "atty",
  "bitflags",
  "strsim",
- "textwrap",
+ "textwrap 0.11.0",
  "unicode-width",
  "vec_map",
 ]
@@ -460,23 +460,26 @@ dependencies = [
 
 [[package]]
 name = "miette"
-version = "2.0.0"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c36fea36dbbdda17d7446f4cbc54048044954e8af2be9ea635569eed9905ba2a"
+checksum = "7db4f10366e751a00b5358ae9a6715497bd4efa2eddca2d84566c731d92936ac"
 dependencies = [
  "atty",
  "ci_info",
  "miette-derive",
  "once_cell",
  "owo-colors",
+ "term_size",
+ "textwrap 0.14.2",
  "thiserror",
+ "unicode-width",
 ]
 
 [[package]]
 name = "miette-derive"
-version = "2.0.0"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a477bf6fcf8ada381914ae788b46978a89ce4eabfbf4c86bc22161ab32fcd254"
+checksum = "da68db2bfa822e0be9552854f68f92a375e7dc2276583e6257b6481f3e2289a7"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -780,6 +783,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "smawk"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f67ad224767faa3c7d8b6d91985b78e70a1324408abcb1cfcc2be4c06bc06043"
+
+[[package]]
 name = "strsim"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -867,6 +876,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "term_size"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e4129646ca0ed8f45d09b929036bafad5377103edd06e50bf574b353d2b08d9"
+dependencies = [
+ "libc",
+ "winapi",
+]
+
+[[package]]
 name = "termcolor"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -881,6 +900,17 @@ version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d326610f408c7a4eb6f51c37c330e496b08506c9457c9d34287ecc38809fb060"
 dependencies = [
+ "unicode-width",
+]
+
+[[package]]
+name = "textwrap"
+version = "0.14.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0066c8d12af8b5acd21e00547c3797fde4e8677254a7ee429176ccebbe93dd80"
+dependencies = [
+ "smawk",
+ "unicode-linebreak",
  "unicode-width",
 ]
 
@@ -914,6 +944,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "unicode-linebreak"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3a52dcaab0c48d931f7cc8ef826fa51690a08e1ea55117ef26f89864f532383f"
+dependencies = [
+ "regex",
+]
+
+[[package]]
 name = "unicode-segmentation"
 version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -921,9 +960,9 @@ checksum = "e83e153d1053cbb5a118eeff7fd5be06ed99153f00dbcd8ae310c5fb2b22edc0"
 
 [[package]]
 name = "unicode-width"
-version = "0.1.7"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "caaa9d531767d1ff2150b9332433f32a24622147e5ebb1f26409d5da67afd479"
+checksum = "3ed742d4ea2bd1176e236172c8429aaf54486e7ac098db29ffe6529e0ce50973"
 
 [[package]]
 name = "unicode-xid"
