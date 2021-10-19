@@ -20,7 +20,7 @@ gpkg = { path = "../gpkg" }
 prettytable-rs = "0.8.0"
 serde_json = "1.0.44"
 thiserror = "1.0.26"
-miette = "2.0.0"
+miette = "3.2.0"
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"
