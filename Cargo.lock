@@ -82,9 +82,9 @@ dependencies = [
 
 [[package]]
 name = "base64"
-version = "0.11.0"
+version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b41b7ea54a0c9d92199de89e20e58d49f02f8e699814ef3fdf266f6f748d15c7"
+checksum = "9475866fec1451be56a3c2400fd081ff546538961565ccb5b7142cbd22bc7a51"
 
 [[package]]
 name = "bitflags"
@@ -348,7 +348,7 @@ dependencies = [
 name = "gpkg"
 version = "0.1.0"
 dependencies = [
- "base64 0.11.0",
+ "base64 0.22.0",
  "env_logger",
  "log",
  "miette",
