@@ -15,7 +15,7 @@ log = "0.4.8"
 base64 = "0.11.0"
 tempfile = "3.2.0"
 miette = "2.0.0"
-thiserror = "1.0.26"
+thiserror = "1.0.59"
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"
